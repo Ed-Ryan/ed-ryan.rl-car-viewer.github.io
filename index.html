@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Rocket League Car Viewer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="static/logo_w_bg.png">
+    <style>
+        /* Rocket League Color Palette */
+        :root {
+            --rl-blue: #2196F3;
+            --rl-orange: #FF9800;
+            --rl-white: #FFFFFF;
+            --rl-black: #000000;
+            --rl-gray-dark: #1a1a1a;
+            --rl-gray-medium: #333333;
+            --rl-accent: #FFC107;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--rl-gray-dark);
+            color: var(--rl-white);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            width: 100vw;
+        }
+
+        .header {
+            background-color: var(--rl-black);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 90px;
+            padding: 0 20px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            border-bottom: 3px solid var(--rl-accent);
+        }
+
+        .logo-container {
+            flex-basis: 150px;
+            text-align: left;
+        }
+
+        .logo {
+            height: 75px;
+            vertical-align: middle;
+        }
+
+        .header-title {
+            flex-grow: 1;
+            text-align: center;
+            color: var(--rl-white);
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 0px 0px 10px var(--rl-blue);
+            margin: 0;
+        }
+
+        .social-icons {
+            flex-basis: 150px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+        }
+
+        .social-icons a {
+            display: inline-block;
+        }
+
+        .social-icons img {
+            height: 50px;
+            width: 50px;
+            transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out;
+        }
+
+        .social-icons img:hover {
+            transform: scale(1.1);
+            filter: grayscale(0%);
+        }
+
+        #main-content {
+            display: flex;
+            flex-grow: 1;
+            position: relative;
+        }
+
+        #viewer-container {
+            flex-grow: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #button-container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 220px;
+            box-sizing: border-box;
+            z-index: 10;
+            border-left: 3px solid var(--rl-blue);
+            box-shadow: -5px 0px 15px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+
+        #button-container h3 {
+            color: var(--rl-accent);
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+            text-transform: uppercase;
+        }
+
+        #button-container button {
+            background-color: var(--rl-blue);
+            color: var(--rl-white);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        #button-container button:hover {
+            background-color: var(--rl-orange);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        #button-container button:active {
+            transform: translateY(0);
+            background-color: var(--rl-accent);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        #loading-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            color: var(--rl-accent);
+            padding: 25px 40px;
+            border-radius: 12px;
+            font-size: 1.5em;
+            font-weight: bold;
+            display: none;
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.5);
+            text-align: center;
+        }
+
+        .thank-you-list {
+            list-style: none;
+            padding: 20px;
+            margin: 30px auto;
+            width: fit-content;
+            border: 2px solid #00aaff;
+            background: linear-gradient(145deg, #0d0d0d, #1a1a1a);
+            border-radius: 12px;
+            box-shadow: 0 0 25px #00aaff88, 0 0 10px #fff3;
+            font-family: 'Orbitron', sans-serif;
+            color: #ffffff;
+        }
+
+        .thank-you-list li {
+            padding: 10px 0;
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .thank-you-list li:hover {
+            transform: scale(1.05);
+            color: #ffaa00;
+        }
+
+        .thank-you-list a {
+            color: #00aaff;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .thank-you-list a:hover {
+            color: #ffaa00;
+            text-shadow: 0 0 5px #ffaa00;
+        }
+    </style>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.165.0/three.module.min.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo-container">
+            <img src="static/logo_wo_bg.png" alt="Your Logo" class="logo">
+        </div>
+        <h1 class="header-title">Rocket League Car Viewer</h1>
+        <div class="social-icons">
+            <a href="https://github.com/ed-ryan" target="_blank"><img src="static/GH.png" alt="Social 1"></a>
+            <a href="https://www.linkedin.com/in/edward-b-ryan/" target="_blank"><img src="static/LI.png"
+                    alt="Social 2"></a>
+        </div>
+    </header>
+
+    <div id="main-content">
+        <div id="button-container">
+            <h3>Select a Car</h3>
+            <button data-model="Fennec">Fennec</button>
+            <button data-model="Octane">Octane</button>
+            <button data-model="Dominus">Dominus</button>
+            <h3 style="border-top: 1px solid rgb(255, 204, 1); padding-top: 10px; margin-top: 10px;">People who built
+                the assets:</h3>
+            <ul class="thank-you-list">
+                <li>Car Designer: <a href="https://sketchfab.com/fairlight51" target="_blank">Jako</a></li>
+                <li>Map Designer <a href="https://sketchfab.com/virtualmakes" target="_blank">Prabhu Ram</a></li>
+            </ul>
+        </div>
+        <div id="viewer-container">
+            <canvas id="threejs-canvas"></canvas>
+        </div>
+    </div>
+
+    <div id="loading-message">Loading Model...</div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+        import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'; // Import GLTFLoader for .glb files
+
+        let scene, camera, renderer, controls;
+        let currentCarModel = null; // To hold the currently loaded car model
+        const loadingMessageDiv = document.getElementById('loading-message');
+
+        function init() {
+            // Scene setup
+            scene = new THREE.Scene();
+            loadMap();
+
+            function loadMap() {
+                // Create the loader
+                const gltfLoader = new GLTFLoader();
+
+                // Set the path to the GLB file
+                gltfLoader.setPath('static/map/');
+
+                // Load the GLB model
+                gltfLoader.load('map.glb', (gltf) => {
+                    const object = gltf.scene;
+
+                    object.position.set(0, -7, 0);
+                    object.scale.set(100, 100, 100);
+                    object.name = 'hangarBackground';
+
+                    scene.add(object);
+                },
+                    // Optional: progress callback
+                    function (xhr) {
+                        // optional
+                    },
+                    // Error callback
+                    function (error) {
+                        console.error('CRITICAL ERROR: Failed to load GLB!', error);
+                    });
+            }
+
+            // Camera setup
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.set(0, 1, 5); // Initial camera position
+
+
+            // Renderer setup
+            renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('threejs-canvas'), antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.outputColorSpace = THREE.SRGBColorSpace; // Important for correct color rendering
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // Softer ambient light
+            scene.add(ambientLight);
+
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1.5);
+            directionalLight1.position.set(5, 10, 7).normalize();
+            scene.add(directionalLight1);
+
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.7);
+            directionalLight2.position.set(-5, -10, -7).normalize();
+            scene.add(directionalLight2);
+
+
+            // OrbitControls setup
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true; // For a smoother, more natural feel
+            controls.dampingFactor = 0.05;
+            controls.screenSpacePanning = false; // Prevent panning relative to screen
+            controls.minDistance = 10; // Closest zoom
+            controls.maxDistance = 100; // Furthest zoom
+            controls.minPolarAngle = Math.PI / 3; // 45 degrees from straight up
+            controls.maxPolarAngle = Math.PI * 2 / 4;
+            controls.target.set(0, 0, 0); // Target slightly above origin for cars
+            controls.update();
+
+            // Event listeners for car selection buttons
+            const carButtons = document.querySelectorAll('#button-container button');
+            carButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const modelName = this.dataset.model; // Get model name from data-model attribute
+                    loadCarModel(modelName);
+                });
+            });
+
+            // Handle window resizing
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function loadCarModel(modelName) {
+            // Remove previous model if it exists
+            if (currentCarModel) {
+                scene.remove(currentCarModel);
+                // Dispose of its geometry and materials to free up memory
+                currentCarModel.traverse(function (child) {
+                    if (child.isMesh) {
+                        if (child.geometry) child.geometry.dispose();
+                        if (child.material) {
+                            if (Array.isArray(child.material)) {
+                                child.material.forEach(m => m.dispose());
+                            } else {
+                                child.material.dispose();
+                            }
+                        }
+                    }
+                });
+                currentCarModel = null; // Clear the reference
+            }
+
+            loadingMessageDiv.style.display = 'block';
+            loadingMessageDiv.innerText = `Loading ${modelName}...`;
+
+            const gltfLoader = new GLTFLoader();
+            gltfLoader.load(
+                `assets/${modelName}.glb`,
+                (gltf) => {
+                    currentCarModel = gltf.scene;
+                    scene.add(currentCarModel);
+
+                    // Center the model and adjust camera
+                    const boundingBox = new THREE.Box3().setFromObject(currentCarModel);
+                    const center = boundingBox.getCenter(new THREE.Vector3());
+                    const size = boundingBox.getSize(new THREE.Vector3());
+
+                    // Center the model in the scene
+                    currentCarModel.position.sub(center);
+
+                    // Adjust camera distance based on model size
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const fov = camera.fov * (Math.PI / 180);
+                    let cameraZ = Math.abs(maxDim / 2 / Math.tan(fov / 2));
+                    cameraZ *= 1.8;
+
+                    camera.position.set(0, size.y * 0.5, cameraZ);
+                    controls.target.set(0, size.y * 0.2, 0);
+                    controls.update();
+
+                    // Optional: Rotate the car
+                    //controls.autoRotate = true; // Enable auto-rotation
+                    //controls.autoRotateSpeed = 0.5; // Slow auto-rotation
+
+                    loadingMessageDiv.style.display = 'none'; // Hide loading message
+                },
+                (xhr) => {
+                    // Progress callback
+                    if (xhr.lengthComputable) {
+                        const percentComplete = (xhr.loaded / xhr.total * 100).toFixed(0);
+                        loadingMessageDiv.innerText = `Loading ${modelName}: ${percentComplete}%`;
+                    }
+                },
+                (error) => {
+                    console.error(`An error occurred while loading model "${modelName}.glb":`, error);
+                    loadingMessageDiv.innerText = `Error loading ${modelName}!`;
+                    // You might want to display a user-friendly error message here
+                }
+            );
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // --- Security / Anti-Tampering Measures ---
+        // Disable right-click context menu
+        document.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+        });
+
+        // Disable F12 and other developer tool shortcuts (Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'F12' ||
+                (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
+                (e.ctrlKey && e.key === 'U')) {
+                e.preventDefault();
+            }
+        });
+        // --- End Security Measures ---
+
+
+        // Start the application when the window is fully loaded
+        window.onload = function () {
+            init();    // Initialize Three.js components
+            animate(); // Start the animation loop
+        };
+    </script>
+</body>
+
+</html>
