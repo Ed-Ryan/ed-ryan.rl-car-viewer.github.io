@@ -370,7 +370,7 @@
 
             const gltfLoader = new GLTFLoader();
             gltfLoader.load(
-                `assets/${modelName}.glb`,
+                `static/assets/${modelName}.glb`,
                 (gltf) => {
                     currentCarModel = gltf.scene;
                     scene.add(currentCarModel);
