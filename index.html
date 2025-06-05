@@ -403,7 +403,7 @@
                     // Progress callback
                     if (xhr.lengthComputable) {
                         const percentComplete = (xhr.loaded / xhr.total * 100).toFixed(0);
-                        loadingMessageDiv.innerText = `Loading ${modelName}: ${percentComplete}%`;
+                        loadingMessageDiv.innerText = `Loading ${modelName}`;
                     }
                 },
                 (error) => {
@@ -428,7 +428,6 @@
 
         // --- Security / Anti-Tampering Measures ---
         // Disable right-click context menu
-        /*
         document.addEventListener('contextmenu', function (e) {
             e.preventDefault();
         });
@@ -442,7 +441,7 @@
                 e.preventDefault();
             }
         });
-        */
+        
         // --- End Security Measures ---
 
 
